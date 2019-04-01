@@ -29,47 +29,47 @@ export class TeacherController {
     async register(request: Request, response: Response, next: NextFunction) {
         const teacherEmail = request.body["teacher"];
         const studentEmails = request.body["students"];
-        
-        if (!teacherEmail || !studentEmails) {
-            return response.status(400).send({ "error": "Missing properties in request data." });
-        }
         try{
-            // Getting teachers data.
-            const teacherData = await this.teacherRepository.findOne({ email: teacherEmail }, { relations: ["students"] });
-    
-            // Checking Teacher and Student availability.
-            if (teacherData) {
-                // If Teacher Exists, we are adding missing students.
-                const toBeAddedStudents = [];
-                for (let i = 0; i < studentEmails.length; i++) {
-                    let isExist = await this.studentRepository.findOne({ "email": studentEmails[i] });
-                    if (!isExist) {
-                        // If student not exisits
-                        toBeAddedStudents.push({ email: studentEmails[i] });
+            if (!teacherEmail || !studentEmails) {
+                response.status(400).send({ "error": "Missing properties in request data." });
+            } else {        
+                // Getting teachers data.
+                const teacherData = await this.teacherRepository.findOne({ email: teacherEmail }, { relations: ["students"] });
+
+                // Checking Teacher and Student availability.
+                if (teacherData) {
+                    // If Teacher Exists, we are adding missing students.
+                    const toBeAddedStudents = [];
+                    for (let i = 0; i < studentEmails.length; i++) {
+                        let isExist = await this.studentRepository.findOne({ "email": studentEmails[i] });
+                        if (!isExist) {
+                            // If student not exisits
+                            toBeAddedStudents.push({ email: studentEmails[i] });
+                        }
                     }
+                    if (toBeAddedStudents.length > 0)
+                    await this.studentRepository.insert(toBeAddedStudents);
+                } else {
+                    // If Teacher not Exists, throwing error with a message.
+                    response.status(400);
+                    return { "error": "Teacher not exists." }
                 }
-                if (toBeAddedStudents.length > 0)
-                await this.studentRepository.insert(toBeAddedStudents);
-            } else {
-                // If Teacher not Exists, throwing error with a message.
-                response.status(400);
-                return { "error": "Teacher not exists." }
+
+                // Getting student(s) record.
+                const studentsData = await this.studentRepository
+                    .createQueryBuilder("student")
+                    .where("student.email IN (:...email)", { email: studentEmails })
+                    .getMany();
+
+                // Updating teacher record with updated students.
+                let alreadyMappedStudents = teacherData.students ? teacherData.students.slice() : [];
+                const studentsToRegister = studentsData.concat(alreadyMappedStudents);
+                teacherData.students = studentsToRegister;
+
+                // Save the record.
+                response.status(204);
+                return await this.teacherRepository.save(teacherData);
             }
-    
-            // Getting student(s) record.
-            const studentsData = await this.studentRepository
-                .createQueryBuilder("student")
-                .where("student.email IN (:...email)", { email: studentEmails })
-                .getMany();
-    
-            // Updating teacher record with updated students.
-            let alreadyMappedStudents = teacherData.students ? teacherData.students.slice() : [];
-            const studentsToRegister = studentsData.concat(alreadyMappedStudents);
-            teacherData.students = studentsToRegister;
-    
-            // Save the record.
-            response.status(204);
-            return await this.teacherRepository.save(teacherData);
         }
         catch (error) {
             next(new HttpException(500, error.message));
