@@ -95,7 +95,7 @@ describe("Teacher controller", () => {
     describe("With /api/suspend", () => {
         it("Should suspend the given student if student is available", (done) => {
             let request = {
-                "student":"studentjon222@gmail.com"
+                "student":"student1@gmail.com"
             };
             chai.request(app).post("/api/suspend")
                 .send(request)
