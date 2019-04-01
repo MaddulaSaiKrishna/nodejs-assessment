@@ -110,7 +110,8 @@ export class TeacherController {
                             studentsData = findCommonElements(studentsData, students);
                         }
                     } else {
-                        return response.status(400).send({ "error": "One or more teacher(s) not exists!" });
+                        response.status(400);
+                        return { "error": "One or more teacher(s) not exists!" }
                     }
                 }
                 response.status(200).send({
