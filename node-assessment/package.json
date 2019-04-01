@@ -1,0 +1,26 @@
+{
+   "name": "node-assessment",
+   "version": "0.0.1",
+   "description": "Awesome project developed with TypeORM.",
+   "devDependencies": {
+      "@types/mocha": "^5.2.6",
+      "@types/node": "^8.0.29",
+      "chai": "^4.2.0",
+      "chai-http": "^4.2.1",
+      "mocha": "^6.0.2",
+      "ts-mocha": "^6.0.0",
+      "ts-node": "3.3.0",
+      "typescript": "2.5.2"
+   },
+   "dependencies": {
+      "typeorm": "0.2.15",
+      "reflect-metadata": "^0.1.10",
+      "mysql": "^2.14.1",
+      "express": "^4.15.4",
+      "body-parser": "^1.18.1"
+   },
+   "scripts": {
+      "start": "ts-node src/index.ts",
+      "test": "ts-mocha test/*.ts --timeout 10000"
+   }
+}
